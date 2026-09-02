@@ -186,6 +186,11 @@ class VerificationView(discord.ui.View):
         custom_id=BUTTON_CUSTOM_ID,
     )
     async def set_name(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        LOGGER.info(
+            "İsim ayarla butonuna basıldı. user_id=%s guild_id=%s",
+            interaction.user.id,
+            interaction.guild_id,
+        )
         if interaction.guild_id != self.bot.config.guild_id:
             await interaction.response.send_message(
                 "❌ Bu doğrulama paneli bu sunucu için yapılandırılmamış.", ephemeral=True
