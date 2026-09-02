@@ -236,13 +236,21 @@ class VerificationBot(discord.Client):
         intents.guilds = True
         super().__init__(intents=intents, allowed_mentions=discord.AllowedMentions.none())
         self.config = config
-        self.verification_view = VerificationView(self)
         self._panel_lock = asyncio.Lock()
         self._panel_ready = False
         self._member_locks: dict[int, asyncio.Lock] = {}
 
     async def setup_hook(self) -> None:
-        self.add_view(self.verification_view)
+        self.add_view(VerificationView(self))
+
+    async def on_interaction(self, interaction: discord.Interaction) -> None:
+        LOGGER.info(
+            "Interaction alındı. type=%s user_id=%s guild_id=%s data=%r",
+            interaction.type,
+            interaction.user.id,
+            interaction.guild_id,
+            interaction.data,
+        )
 
     async def on_ready(self) -> None:
         if self.user is None:
@@ -307,10 +315,10 @@ class VerificationBot(discord.Client):
                         break
 
             if message is None:
-                message = await channel.send(embed=panel_embed(), view=self.verification_view)
+                message = await channel.send(embed=panel_embed(), view=VerificationView(self))
                 LOGGER.info("Doğrulama paneli oluşturuldu: mesaj ID %s", message.id)
             else:
-                await message.edit(embed=panel_embed(), view=self.verification_view)
+                await message.edit(embed=panel_embed(), view=VerificationView(self))
                 LOGGER.info("Mevcut doğrulama paneli kullanılıyor: mesaj ID %s", message.id)
 
             save_message_id(self.config, message.id)
